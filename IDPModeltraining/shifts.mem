@@ -1,0 +1,4 @@
+# layer  weight_shift  act_shift
+layer1 3 0
+layer2 3 0
+layer3 6 0

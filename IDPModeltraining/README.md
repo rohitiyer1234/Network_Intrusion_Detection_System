@@ -1,0 +1,125 @@
+# Network Traffic Classification — 3-class IDP (normal / ddos / botnet)
+
+An MLP traffic classifier trained on **CSE-CIC-IDS2018**, with two deployment
+paths from a single dataset:
+
+1. **Floating-point** — trained with BatchNorm, BN folded into the weights, and
+   exported to a torch-free **NumPy** model (`model_fp.npz`).
+2. **QAT INT8** — quantization-aware training of the BatchNorm-free FPGA datapath,
+   exported to INT8/INT16 arrays (`model_qat.npz`) and `.mem` files for the
+   3-layer hardware MLP.
+
+Classes (single source of truth in `constants.py`):
+
+| id | class  | CIC-IDS2018 labels |
+|----|--------|--------------------|
+| 0  | normal | Benign |
+| 1  | ddos   | DoS / DDoS family (Hulk, GoldenEye, LOIC-HTTP, HOIC, Slowloris, …) |
+| 2  | botnet | Bot |
+
+Model architecture: `Linear(20→64) → BN → ReLU → Linear(64→32) → BN → ReLU → Linear(32→3)`.
+The 20-feature vector (`FEATURE_ORDER`) is unchanged; `FEATURE_RANGES` is
+auto-recalibrated from the data by `build_dataset.py`.
+
+## Dependencies
+
+```bash
+python3 -m venv venv && source venv/bin/activate
+pip install torch numpy pandas pyarrow scikit-learn matplotlib websockets
+```
+
+`scikit-learn` + `matplotlib` are used for metrics and PNG figures (headless `Agg`).
+
+## Pipeline
+
+```
+dataset/*.parquet
+  └─ generate_training_data.py ─► training_features.csv
+       └─ build_dataset.py ─► dataset_final.csv  +  dataset_distribution.png
+            │                  (also recalibrates FEATURE_RANGES in constants.py)
+            ├─ FP path
+            │    train_fp.py ─► model_fp.pth (+ fp_*.png)
+            │      └─ export_fp_npz.py ─► model_fp.npz
+            │           └─ infer_numpy.py        (pure NumPy, no torch)
+            └─ QAT path
+                 train_qat.py ─► model_qat.pth (+ qat_*.png)
+                   └─ export_qat_npz.py ─► model_qat.npz
+                        └─ npz_to_mem.py ─► layer{1,2,3}_{weights,bias}.mem
+  test_models.py ─► FP-vs-QAT accuracy/latency report + model_comparison.png
+```
+
+### 1. Build the dataset
+
+```bash
+python3 generate_training_data.py --dataset dataset/ --output training_features.csv
+python3 build_dataset.py          # → dataset_final.csv (~146k × 3 classes)
+```
+
+`generate_training_data.py` coarse-caps each class while streaming the parquet
+files, then runs the **same** `extract_features()` as the live receiver, so
+training and inference see identical features. `build_dataset.py` does the exact
+final balancing (all classes capped to the scarce `botnet` count, ~146k each),
+plots the distribution, and recalibrates `FEATURE_RANGES` (robust 0.1/99.9
+percentiles) for minimal INT8 quantization loss.
+
+### 2. Floating-point model
+
+```bash
+python3 train_fp.py                          # → model_fp.pth + fp_*.png
+python3 export_fp_npz.py                      # → model_fp.npz (BN folded)
+python3 infer_numpy.py --csv dataset_final.csv --limit 10   # NumPy inference
+```
+
+### 3. QAT INT8 model (FPGA)
+
+```bash
+python3 train_qat.py                          # → model_qat.pth + qat_*.png
+python3 export_qat_npz.py                     # → model_qat.npz (int8/int16 + shifts)
+python3 npz_to_mem.py                         # → layer{1,2,3}_{weights,bias}.mem
+python3 debug_quant_mlp.py                    # golden-reference stage dump for RTL
+```
+
+`.mem` format: weights are 2-hex INT8 (two's complement), PAR=32-lane grouped
+per output neuron; biases are 4-hex INT16.
+
+### 4. Compare the models
+
+```bash
+python3 test_models.py --fp model_fp.pth --qat model_qat.pth --runs 1000
+```
+
+Prints a per-class metrics table for each model plus an FP-vs-QAT comparison
+(accuracy, macro-F1, latency, size) and saves `test_*_confusion_matrix.png` and
+`model_comparison.png`.
+
+## Generated artifacts
+
+| File | Produced by | Purpose |
+|------|-------------|---------|
+| `dataset_final.csv` | build_dataset.py | balanced 3-class training set |
+| `dataset_distribution.png` | build_dataset.py | raw-vs-balanced class counts |
+| `model_fp.pth` / `model_fp.npz` | train_fp / export_fp_npz | FP model (torch / NumPy) |
+| `model_qat.pth` / `model_qat.npz` | train_qat / export_qat_npz | INT8 model + shifts |
+| `layer{1,2,3}_{weights,bias}.mem` | npz_to_mem.py | FPGA memory-init files |
+| `fp_*.png`, `qat_*.png`, `model_comparison.png` | training / test | metrics & curves |
+
+## Real-time pipeline (live demo)
+
+`receiver.py` reconstructs flows from UDP frames, extracts the 20 features, runs
+the model, and streams class counts (`normal/ddos/botnet`) over WebSocket.
+`traffic_generator.py` sends synthetic traffic (modes: normal/ddos/botnet/bulk/mixed).
+
+```bash
+# terminal 1
+python3 receiver.py --model model_fp.pth --port 5555
+# terminal 2
+python3 traffic_generator.py --target_ip 127.0.0.1 --target_port 5555 --mode mixed --rate 200
+```
+
+## Notes
+
+- Do not change `FEATURE_ORDER`, the feature-extraction math, or the model
+  architecture — training, the live pipeline, and the FPGA datapath all depend
+  on them matching.
+- `FEATURE_RANGES` in `constants.py` is regenerated by `build_dataset.py`
+  between the `AUTO-CALIBRATED` markers; rerun it if you rebuild the dataset.

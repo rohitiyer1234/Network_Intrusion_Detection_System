@@ -1,0 +1,29 @@
+=====================================================
+GOLDEN REFERENCE
+=====================================================
+
+Neuron: 0
+
+STEP 00 x=   1 w=   0 prod=     0
+STEP 01 x=   2 w=   1 prod=     2
+STEP 02 x=   3 w=  -1 prod=    -3
+STEP 03 x=   4 w=   0 prod=     0
+STEP 04 x=   5 w=  -1 prod=    -5
+STEP 05 x=   6 w=   0 prod=     0
+STEP 06 x=   7 w=   0 prod=     0
+STEP 07 x=   8 w=   0 prod=     0
+STEP 08 x=   9 w=   1 prod=     9
+STEP 09 x=  10 w=  -1 prod=   -10
+STEP 10 x=  11 w=   1 prod=    11
+STEP 11 x=  12 w=   0 prod=     0
+STEP 12 x=  13 w=   0 prod=     0
+STEP 13 x=  14 w=   0 prod=     0
+STEP 14 x=  15 w=   0 prod=     0
+STEP 15 x=  16 w=   0 prod=     0
+STEP 16 x=  17 w=   0 prod=     0
+STEP 17 x=  18 w=   0 prod=     0
+STEP 18 x=  19 w=  -1 prod=   -19
+STEP 19 x=  20 w=   0 prod=     0
+
+FINAL_ACC=0
+FINAL_OUT=0

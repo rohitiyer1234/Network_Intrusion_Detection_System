@@ -1,0 +1,18 @@
+# ── LAPTOP requirements ───────────────────────────────────────────────────────
+# advanced_traffic_generator.py, LAPTOP/tests/*.py: stdlib only.
+
+flask>=2.3            # dashboard_server.py (Flask + SSE dashboard backend)
+torch>=1.13.0          # export_model.py only (one-time .pth -> .npz conversion)
+numpy>=1.23            # export_model.py only
+
+# ── PYNQ-Z2 requirements (board side) ─────────────────────────────────────────
+# receiver.py performs inference with a pure-NumPy MLP (PYNQ/numpy_model.py) —
+# NO PyTorch needed on the board itself. Install only:
+#
+#   pip install numpy
+
+# ── Optional tools (NOT required to run the live demo) ────────────────────────
+# tools/model_reference.py      -> pip install torch
+# tools/validate_numpy_model.py -> pip install numpy   (already covered above)
+# tools/evaluate_model.py       -> pip install pandas scikit-learn
+#                                   (also needs your own labeled CSV dataset)
