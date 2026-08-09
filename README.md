@@ -65,7 +65,7 @@ At the highest level, traffic generated on a laptop is sent over UDP to the PYNQ
 │                               │                         │  │   AXI4-Stream logits  ←  mlp_top.sv    │    │
 │                               │                         │  └───────────────────────────────────────┘    │
 │                               │                         │        │  JSON result (+ inference_ms)         │
-│  dashboard_server.py         │◀──TCP:9000───────────────         ▼                                       │
+│  dashboard_server.py          │◀──TCP:9000───────────────        ▼                                       │
 │  Flask + SSE, served on :8080│                         │  ResultSender                                   │
 └──────────────────────────────┘                         └────────────────────────────────────────────────┘
        │
@@ -79,7 +79,7 @@ The PS-side (ARM Cortex-A9) software pipeline — capture, flow reconstruction, 
 
 The diagram below shows the intended final partitioning once the accelerator is integrated: the ARM Cortex-A9 PS owns packet capture, flow management, feature extraction, and quantization, while the FPGA PL owns the MLP accelerator itself (MAC array, ReLU/argmax, and BRAM weight/bias storage), connected over AXI4-Stream / AXI4-Lite at 100 MHz.
 
-![Hardware-Software Partitioning of the Proposed NIDS Framework](images/hw_sw_partitioning.png)
+![Hardware-Software Partitioning of the Proposed NIDS Framework](Images/hw_sw_partitioning.png)
 
 *Figure: Hardware–software partitioning — PS-side flow pipeline (left) vs. PL-side MLP accelerator (right), connected via AXI4-Lite control and AXI4-Stream feature/result flows. This reflects the target partitioning; today the "MLP Accelerator" block executes on the PS in NumPy rather than on the PL.*
 
@@ -198,7 +198,7 @@ FC(32 → 3)  → Softmax
 Output: P(normal), P(ddos), P(botnet)
 ```
 
-![Quantized MLP Architecture for Traffic Classification](images/quantized_mlp_architecture.png)
+![Quantized MLP Architecture for Traffic Classification](Images/quantized_mlp_architecture.png)
 
 *Figure: INT8-quantized layer-block view of the same MLP as deployed for FPGA inference — 20×INT8 input → FC(20×64, INT8×INT8 MAC, INT32 bias) → ReLU → FC(64×32) → ReLU → FC(32×3, INT32 logits) → Argmax → `class_id`. This is the exact per-layer INT8/INT32 precision the RTL (`layer1_mlp.sv`/`layer2_mlp.sv`/`layer3_mlp.sv`, `mac_array.sv`, `activation_relu.sv`) implements, matching `parameter_pkg.sv`'s `FEAT_W=8`, `W_WIDTH=8`, `ACC_W=32`.*
 
@@ -229,7 +229,7 @@ Both variants share the exact same 20→64→32→3 topology; QAT training match
 
 Getting a trained model onto the FPGA fabric is a distinct offline pipeline, separate from the live inference path: it runs once (or whenever the model is retrained) on an x86 host, and its output is baked directly into the FPGA bitstream at synthesis time.
 
-![Weight Export Pipeline — Training to FPGA Deployment](images/weight_export_pipeline.png)
+![Weight Export Pipeline — Training to FPGA Deployment](Images/weight_export_pipelined.png)
 
 *Figure: Offline weight export flow — CICIDS2017 CSV captures → PyTorch MLP training (20→64→32→5, cross-entropy/Adam) → quantization-aware training (QAT, fake-quant nodes) → static post-training INT8 quantization → NumPy weight extraction (`state_dict()` → `.detach().numpy()` → `.npy`) → hex-encoded `.mem` file generation → Vivado BRAM initialization (`$readmemh`) → synthesized bitstream deployed to the Zynq-7020 PL.*
 
