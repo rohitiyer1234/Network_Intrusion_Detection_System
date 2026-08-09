@@ -1,0 +1,6 @@
+Time resolution is 1 ps
+TEST : BASIC FRAME
+FRAME LATENCY = 22 cycles
+BASIC PASSED
+TEST : BACKPRESSURE
+INFO: xsimkernel Simulation Memory Usage: 289812 KB (Peak: 347084 KB), Simulation CPU Usage: 640 ms

@@ -1,0 +1,202 @@
+$date
+   Fri May  8 20:26:32 2026
+$end
+
+$version
+  2025.2
+  $dumpfile ("activation_relu_quant.vcd") 
+$end
+
+$timescale
+  1ps
+$end
+
+$scope module tb_activation_relu_quant $end
+$var reg 1 ! clk $end
+$var reg 1 " rst_n $end
+$var reg 1 # en $end
+$var reg 1 $ valid $end
+$scope module dut $end
+$var wire 1 % clk $end
+$var wire 1 & rst_n $end
+$var wire 1 ' en $end
+$var reg 1 $ valid $end
+$var reg 1 ( valid_s1 $end
+$var reg 1 ) valid_s2 $end
+$scope begin Block107_1 $end
+$var reg 32 * i [31:0] $end
+$upscope $end
+$scope begin Block118_2 $end
+$var reg 32 + i [31:0] $end
+$scope begin Block118_3 $end
+$var reg 32 , pre_val [31:0] $end
+$upscope $end
+$upscope $end
+$scope begin Block158_5 $end
+$var reg 32 - i [31:0] $end
+$upscope $end
+$scope begin Block169_6 $end
+$var reg 32 . i [31:0] $end
+$scope begin Block169_7 $end
+$var reg 32 / shift_val [31:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope task apply_reset $end
+$upscope $end
+$scope task drive_transaction $end
+$upscope $end
+$scope task wait_valid $end
+$upscope $end
+$scope task compute_expected $end
+$upscope $end
+$scope task check_outputs $end
+$upscope $end
+$scope task verify_latency $end
+$upscope $end
+$scope task test_basic $end
+$upscope $end
+$scope task test_relu $end
+$upscope $end
+$scope task test_clamp $end
+$upscope $end
+$scope task test_saturation $end
+$upscope $end
+$scope task test_back_to_back $end
+$upscope $end
+$scope task test_bubbles $end
+$upscope $end
+$scope task test_shift_zero $end
+$upscope $end
+$scope task test_mid_reset $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+
+#0
+$dumpvars
+0!
+0"
+0#
+x$
+0%
+0&
+0'
+x(
+x)
+b0 *
+b0 +
+bx ,
+b0 -
+b0 .
+bx /
+$end
+
+#5000
+1!
+0$
+1%
+0(
+0)
+b1000 *
+b1000 -
+
+#10000
+0!
+0%
+
+#15000
+1!
+1%
+b1000 *
+b1000 -
+
+#20000
+0!
+0%
+
+#25000
+1!
+1%
+b1000 *
+b1000 -
+
+#30000
+0!
+0%
+
+#35000
+1!
+1%
+b1000 *
+b1000 -
+
+#40000
+0!
+0%
+
+#45000
+1!
+1"
+1%
+1&
+
+#50000
+0!
+0%
+
+#55000
+1!
+1%
+
+#60000
+0!
+0%
+
+#65000
+1!
+1%
+
+#70000
+0!
+0%
+
+#75000
+1!
+1#
+1%
+1'
+
+#80000
+0!
+0%
+
+#85000
+1!
+0#
+1%
+0'
+1(
+b1000 +
+b1110101 ,
+
+#90000
+0!
+0%
+
+#95000
+1!
+1$
+1%
+0(
+1)
+b1000 .
+b111010 /
+
+#100000
+0!
+0%
+
+#105000
+1!
+1%
