@@ -466,9 +466,9 @@ Open the project in Vivado, set the desired testbench as the simulation top, and
 | `layer1_mlp` / `layer2_mlp` / `layer3_mlp` | ✅ Individually testbenched against expected activations |
 | `axi_lite_slave` | ✅ Testbenched — basic R/W, backpressure, invalid-strobe, simultaneous AW/W, and stress sequences all pass |
 | `axi_stream_slave` / `axi_stream_master` | ✅ Testbenched |
-| `control_fsm` | ✅ Testbenched — full `IDLE → L1 → L2 → L3 → OUTPUT → DONE` sequencing, plus `ERROR` path |
+| `control_fsm` | 🚧 In Progress — full `IDLE → L1 → L2 → L3 → OUTPUT → DONE` sequencing, plus `ERROR` path, present bug fixing for violations |
 | `register_bank` | ✅ Testbenched — control/status/logit register R/W verified |
-| `mlp_top` (full integration) | ✅ Simulated at module level via `tb_mlp_top.sv` |
+| `mlp_top` (full integration) | 🚧 Integration at module level via `tb_mlp_top.sv` pending for complete validation |
 | **PL ↔ PS integration on real hardware** | ⏳ **Not yet done** — no Vivado block-design/overlay wiring the accelerator to the Zynq PS, no PYNQ Python driver calling into the IP over `pynq.MMIO`/DMA. `receiver.py` on the board still performs inference in NumPy, not on the fabric. |
 
 ---
